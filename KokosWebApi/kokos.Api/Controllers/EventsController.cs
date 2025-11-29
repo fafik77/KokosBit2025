@@ -185,5 +185,46 @@ namespace kokos.Api.Controllers
 
 			return NoContent();
 		}
+		
+		[HttpDelete("{evtId}/removeUser/{usrId}")]
+		public async Task<IActionResult> RemoveUserInEvent(long evtId, int usrId)
+		{
+
+			var userToRemove = await _context.Uzytkownicy.FindAsync(usrId);
+			if (userToRemove == null)
+				throw new InvalidUserException($"User id {usrId} does not exits");
+
+			var eventToPurgeUser = await _context.Wydarzenia
+				.Include(e => e.Organizator)
+				.Include(e => e.UczestnicyPotwierdzeni)
+				.Include(e => e.UczestnicyChetni)
+				.FirstOrDefaultAsync(e => e.Id == evtId);
+			if (eventToPurgeUser == null)
+				throw new InvalidEventException($"Event id {evtId} does not exits");
+
+			if (eventToPurgeUser.Zakonczone)
+				return BadRequest($"Event id {evtId} has concluded");
+
+			var userToRemoveFound = eventToPurgeUser.UczestnicyChetni?.Find(u => u.Id == userToRemove.Id);
+			if (userToRemoveFound != null)
+				eventToPurgeUser.UczestnicyChetni?.Remove(userToRemoveFound);
+			else
+				userToRemoveFound = eventToPurgeUser.UczestnicyPotwierdzeni?.Find(u => u.Id == userToRemove.Id);
+			if (userToRemoveFound == null)
+				return NoContent(); // no such user in event,
+			else
+				eventToPurgeUser.UczestnicyPotwierdzeni?.Remove(userToRemoveFound);
+
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateException ex)
+			{
+				throw;
+			}
+
+			return NoContent();
+		}
 	}
 }
