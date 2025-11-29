@@ -15,7 +15,12 @@ namespace kokos.Api.Mappings
 
 			// 2. Tell AutoMapper how to convert the Event Entity to the Main DTO
 			// AutoMapper will automatically use the map above for 'Organizator' and the Lists!
-			CreateMap<EventInfo, EventInfoWithNamesOnlyDTO>();
+			CreateMap<EventInfo, EventInfoWithNamesOnlyDTO>()
+				.ForMember(dest => dest.Uczestnicy, opt => opt.MapFrom(src =>
+				// Combine both lists, handling nulls
+				(src.UczestnicyPotwierdzeni.Select(u => new UserIdLoginPotwierdzony() { Potwierdzony = true, Id = u.Id, Login = u.Login }) ?? new List<UserIdLoginPotwierdzony>())
+				.Concat(src.UczestnicyChetni.Select(u => new UserIdLoginPotwierdzony() { Potwierdzony = false, Id = u.Id, Login = u.Login }) ?? new List<UserIdLoginPotwierdzony>())
+			));
 
 			// If you need the reverse (DTO -> Entity) for Creating events
 			CreateMap<EventInfoWithNamesOnlyDTO, EventInfo>()

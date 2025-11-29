@@ -23,9 +23,7 @@ namespace kokos.Api.DTO
 		public double Szerokosc { get; set; }
 		public bool Zakonczone { get; set; } = false;
 
-		public List<UserIdLogin>? UczestnicyPotwierdzeni { get; set; }
-		public List<UserIdLogin>? UczestnicyChetni { get; set; }
-
+		public List<UserIdLogin>? Uczestnicy { get; set; }
 	}
 
 
