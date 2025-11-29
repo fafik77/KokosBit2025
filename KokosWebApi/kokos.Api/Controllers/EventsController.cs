@@ -37,7 +37,7 @@ namespace kokos.Api.Controllers
 
 		// GET: api/Events/{}
 		[HttpGet("{id}")]
-		public async Task<ActionResult<EventInfoWithNamesOnlyDTO>> GetWydarzenie(int id)
+		public async Task<ActionResult<EventInfoWithNamesOnlyDTO>> GetWydarzenie(long id)
 		{
 			var res = await _context.Wydarzenia
 			.Include(e => e.Organizator)
@@ -97,5 +97,58 @@ namespace kokos.Api.Controllers
 			return CreatedAtAction(nameof(GetWydarzenie), new { id = dto.Id }, dto);
 		}
 
+		[HttpPost("{evtId}/adduser/{usrId}")]
+		public async Task<ActionResult<EventInfoWithNamesOnlyDTO>> AddUserToEvent(long evtId, int usrId)
+		{
+			//if (eventCreate.OrganizatorId == null)
+			//	throw new InvalidUserException("Organizator is required");
+
+			var userJoining = await _context.Uzytkownicy.FindAsync(usrId);
+			if (userJoining == null)
+				throw new InvalidUserException($"User id {usrId} does not exits");
+
+			var eventToJoin = await _context.Wydarzenia
+				.Include(e => e.Organizator)
+				.Include(e => e.UczestnicyPotwierdzeni)
+				.Include(e => e.UczestnicyChetni)
+				.FirstOrDefaultAsync(e => e.Id == evtId);
+			if (eventToJoin == null)
+				throw new InvalidEventException($"Event id {evtId} does not exits");
+
+			if (eventToJoin.Zakonczone)
+				return BadRequest($"Event id {evtId} has concluded");
+
+			if (eventToJoin.UczestnicyChetni == null) eventToJoin.UczestnicyChetni = new();
+
+			if (userJoining == eventToJoin.Organizator) //Organizator can not join Event
+			{
+				throw new InvalidEventException("Organizator can not join Event");
+			}
+
+			var alreadyIn =
+			eventToJoin.UczestnicyChetni.Find(u => u.Id == userJoining.Id);
+			if (alreadyIn == null)
+				alreadyIn =
+				eventToJoin.UczestnicyPotwierdzeni?.Find(u => u.Id == userJoining.Id);
+
+			if (alreadyIn != null)
+				throw new UserAlreadyInEventException($"User {usrId} already is in Event {evtId}!");
+
+			eventToJoin.UczestnicyChetni.Add(userJoining);
+
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateException ex)
+			{
+				throw;
+			}
+			// FIX: Use AutoMapper here to turn the fully created Entity into the DTO
+			// This ensures the Organizator string is populated correctly in the response
+			EventInfoWithNamesOnlyDTO dto = _mapper.Map<EventInfoWithNamesOnlyDTO>(eventToJoin);
+
+			return CreatedAtAction(nameof(GetWydarzenie), new { id = dto.Id }, dto);
+		}
 	}
 }
