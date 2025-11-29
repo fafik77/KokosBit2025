@@ -1,0 +1,21 @@
+@kokos.Api_HostAddress = https://localhost:7093
+### use the "Enpoints Explorer" to quickly generate checks
+
+GET {{kokos.Api_HostAddress}}/api/todos/
+Accept: application/json
+
+###
+
+@id=0
+GET {{kokos.Api_HostAddress}}/api/todos/{{id}}
+
+###
+
+POST {{kokos.Api_HostAddress}}/api/todos
+Content-Type: application/json
+
+{
+  //TodoItem
+}
+
+###
