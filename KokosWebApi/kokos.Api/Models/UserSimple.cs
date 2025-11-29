@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace kokos.Api.Models
 {
@@ -14,5 +15,9 @@ namespace kokos.Api.Models
 
 
 		public List<EventInfo>? Wydarzenia { get; set; }
+
+		// This list represents opinions RECEIVED by this user
+		[InverseProperty("RatedUser")]
+		public List<OpinionsForUser>? OpinionsForUser { get; set; }
 	}
 }
