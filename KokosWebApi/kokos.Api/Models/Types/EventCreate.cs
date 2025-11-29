@@ -1,19 +1,14 @@
-﻿using kokos.Api.Models;
-using kokos.Api.Models.Types;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace kokos.Api.DTO
+namespace kokos.Api.Models.Types
 {
-	public class EventInfoWithNamesOnlyDTO
+	public class EventCreate
 	{
-		[Key]
-		public long Id { get; set; }
-
 		[Required(ErrorMessage = "Nazwa is required")]
 		[StringLength(128, MinimumLength = 4, ErrorMessage = "Nazwa must be between 4 and 128 characters.")]
 		public string Nazwa { get; set; }
 		public string? Opis { get; set; }
-		public UserIdLogin Organizator { get; set; }
+		public int OrganizatorId { get; set; }
 		public string Typ { get; set; }
 		//osobno
 		public DateOnly Data { get; set; }
@@ -21,12 +16,5 @@ namespace kokos.Api.DTO
 		//lokcaja
 		public double Wysokosc { get; set; }
 		public double Szerokosc { get; set; }
-		public bool Zakonczone { get; set; } = false;
-
-		public List<UserIdLogin>? UczestnicyPotwierdzeni { get; set; }
-		public List<UserIdLogin>? UczestnicyChetni { get; set; }
-
 	}
-
-
 }
