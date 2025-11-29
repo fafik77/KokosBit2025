@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace kokos.Api.Models
 {
@@ -9,6 +10,7 @@ namespace kokos.Api.Models
 		[Required]
 		[StringLength(32, MinimumLength = 4, ErrorMessage = "Login must be between 4 and 32 characters.")]
 		public string Login { get; set; }
+		public string? Preferencje { get; set; }
 
 
 		public List<EventInfo>? Wydarzenia { get; set; }

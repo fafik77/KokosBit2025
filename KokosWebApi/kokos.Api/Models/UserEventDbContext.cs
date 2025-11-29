@@ -32,6 +32,11 @@ namespace kokos.Api.Models
 				.HasMany(e => e.UczestnicyChetni)
 				.WithMany()
 				.UsingEntity(j => j.ToTable("EventParticipantsWilling"));
+
+			// Make Login Unique
+			modelBuilder.Entity<UserSimple>()
+				.HasIndex(u => u.Login)
+				.IsUnique();
 		}
 
 		public DbSet<EventInfo> Wydarzenia { get; set; } = null!;
