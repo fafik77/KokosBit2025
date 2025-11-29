@@ -10,13 +10,16 @@ namespace kokos.Api.Extensions
 		{
 			using (var scope = app.ApplicationServices.CreateScope())
 			{
-				var dbContextTodo = scope.ServiceProvider.GetRequiredService<TodoDBContext>();
-				var dbContextUser = scope.ServiceProvider.GetRequiredService<UserDBContext>();
+				var dbContextEventUser = scope.ServiceProvider.GetRequiredService<UserEventDbContext>();
+				//var dbContextTodo = scope.ServiceProvider.GetRequiredService<TodoDBContext>();
+				//var dbContextUser = scope.ServiceProvider.GetRequiredService<UserDBContext>();
 				// Only apply to real DB, do not apply to inMemory DB
-				if (dbContextTodo.Database.IsRelational())
-					dbContextTodo.Database.Migrate();
-				if (dbContextUser.Database.IsRelational())
-					dbContextUser.Database.Migrate();
+				if (dbContextEventUser.Database.IsRelational())
+					dbContextEventUser.Database.Migrate();
+				//if (dbContextTodo.Database.IsRelational())
+				//	dbContextTodo.Database.Migrate();
+				//if (dbContextUser.Database.IsRelational())
+				//	dbContextUser.Database.Migrate();
 				//app.ApplyMigrations();
 				//var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 				//if (!await roleMgr.RoleExistsAsync(Roles.Admin))
