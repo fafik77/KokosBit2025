@@ -70,7 +70,9 @@ builder.Services.AddIdentityCore<User>()
 // Add DB for todos and Users
 builder.Services.AddDbContext<TodoDBContext>(opt =>
 	opt.UseNpgsql(DefaultConnectionString));
-builder.Services.AddDbContext<UserDBContext>(opt =>
+//builder.Services.AddDbContext<UserDBContext>(opt =>
+//	opt.UseNpgsql(DefaultConnectionString));
+builder.Services.AddDbContext<UserEventDbContext>(opt =>
 	opt.UseNpgsql(DefaultConnectionString));
 
 
