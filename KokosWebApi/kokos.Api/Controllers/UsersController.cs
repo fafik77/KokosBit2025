@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using kokos.Api.DTO;
 using kokos.Api.Exceptions;
 using kokos.Api.Models;
 using kokos.Api.Models.Types;
@@ -23,12 +22,21 @@ namespace kokos.Api.Controllers
 		}
 		// GET: api/<UsersController>
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<TodoItem>>> Get()
+		public async Task<ActionResult<IEnumerable<UserSimple>>> Get()
 		{
-			//return new string[] { "value1", "value2" };
-
 			var res = await _context.Uzytkownicy.AsNoTracking().ToListAsync();
 			return Ok(res);
+		}
+		public class UserLogin
+		{
+			public string Login { get; set; }
+		}
+		[HttpPost("bylogin")]
+		public async Task<ActionResult<UserSimple>> GetUserByLogin(UserLogin login)
+		{
+			var user = await _context.Uzytkownicy.FirstOrDefaultAsync(u => u.Login == login.Login);
+			if (user == null) return NotFound();
+			return Ok(user);
 		}
 
 		// GET api/<UsersController>/5
@@ -50,7 +58,8 @@ namespace kokos.Api.Controllers
 			try
 			{
 				await _context.SaveChangesAsync();
-			} catch (DbUpdateException ex)
+			}
+			catch (DbUpdateException ex)
 			{
 				throw new UserAlreadyExistsException($"User with login: '{userLoginPreferencje.Login}' already exists");
 			}
