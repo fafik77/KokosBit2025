@@ -97,12 +97,9 @@ namespace kokos.Api.Controllers
 			return CreatedAtAction(nameof(GetWydarzenie), new { id = dto.Id }, dto);
 		}
 
-		[HttpPost("{evtId}/adduser/{usrId}")]
+		[HttpPost("{evtId}/addUser/{usrId}")]
 		public async Task<ActionResult<EventInfoWithNamesOnlyDTO>> AddUserToEvent(long evtId, int usrId)
 		{
-			//if (eventCreate.OrganizatorId == null)
-			//	throw new InvalidUserException("Organizator is required");
-
 			var userJoining = await _context.Uzytkownicy.FindAsync(usrId);
 			if (userJoining == null)
 				throw new InvalidUserException($"User id {usrId} does not exits");
@@ -149,6 +146,44 @@ namespace kokos.Api.Controllers
 			EventInfoWithNamesOnlyDTO dto = _mapper.Map<EventInfoWithNamesOnlyDTO>(eventToJoin);
 
 			return CreatedAtAction(nameof(GetWydarzenie), new { id = dto.Id }, dto);
+		}
+
+		[HttpPut("{evtId}/confirmUser/{usrId}")]
+		public async Task<IActionResult> ConfirmUserInEvent(long evtId, int usrId)
+		{
+			var userJoining = await _context.Uzytkownicy.FindAsync(usrId);
+			if (userJoining == null)
+				throw new InvalidUserException($"User id {usrId} does not exits");
+
+			var eventToJoin = await _context.Wydarzenia
+				.Include(e => e.Organizator)
+				.Include(e => e.UczestnicyPotwierdzeni)
+				.Include(e => e.UczestnicyChetni)
+				.FirstOrDefaultAsync(e => e.Id == evtId);
+			if (eventToJoin == null)
+				throw new InvalidEventException($"Event id {evtId} does not exits");
+
+			if (eventToJoin.Zakonczone)
+				return BadRequest($"Event id {evtId} has concluded");
+
+			var userToConfirm = eventToJoin.UczestnicyChetni?.Find(u => u.Id == userJoining.Id);
+			if (userToConfirm == null)
+				return BadRequest($"User id {usrId} is not waiting for confirmation in event {evtId}");
+
+			if (eventToJoin.UczestnicyPotwierdzeni == null) eventToJoin.UczestnicyPotwierdzeni = new();
+			eventToJoin.UczestnicyPotwierdzeni.Add(userToConfirm);
+			eventToJoin.UczestnicyChetni.Remove(userToConfirm);
+
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateException ex)
+			{
+				throw;
+			}
+
+			return NoContent();
 		}
 	}
 }
