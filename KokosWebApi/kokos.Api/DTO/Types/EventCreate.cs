@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace kokos.Api.Models.Types
+namespace kokos.Api.DTO.Types
 {
 	public class EventCreate
 	{

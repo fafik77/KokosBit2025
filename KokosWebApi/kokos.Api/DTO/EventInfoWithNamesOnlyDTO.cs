@@ -1,5 +1,5 @@
-﻿using kokos.Api.Models;
-using kokos.Api.Models.Types;
+﻿using kokos.Api.DTO.Types;
+using kokos.Api.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace kokos.Api.DTO

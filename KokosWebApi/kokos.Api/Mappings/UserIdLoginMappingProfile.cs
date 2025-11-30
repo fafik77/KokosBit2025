@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using kokos.Api.DTO.Types;
 using kokos.Api.Models;
-using kokos.Api.Models.Types;
 
 namespace kokos.Api.Mappings
 {

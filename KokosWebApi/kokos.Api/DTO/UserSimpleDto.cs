@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using kokos.Api.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace kokos.Api.Models
+namespace kokos.Api.DTO
 {
-	public class UserSimple
+	public class UserSimpleDto
 	{
 		[Key]
 		public int Id { get; set; }
@@ -13,11 +13,8 @@ namespace kokos.Api.Models
 		public string Login { get; set; }
 		public string? Preferencje { get; set; }
 
+		public int TrwajaceWydarzenia { get; set; }
 
-		public List<EventInfo>? Wydarzenia { get; set; }
-
-		// This list represents opinions RECEIVED by this user
-		[InverseProperty("RatedUser")]
-		public List<OpinionsForUser>? OpinionsForUser { get; set; }
+		public float UserRating { get; set; }
 	}
 }

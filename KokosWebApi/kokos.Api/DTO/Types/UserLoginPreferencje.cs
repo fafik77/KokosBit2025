@@ -1,4 +1,4 @@
-﻿namespace kokos.Api.Models.Types
+﻿namespace kokos.Api.DTO.Types
 {
 	public class UserLoginPreferencje
 	{
