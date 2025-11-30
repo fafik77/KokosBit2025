@@ -101,7 +101,7 @@ namespace kokos.Api.Controllers
 
 		// POST api/<UsersController>/{}/opinie
 		[HttpPost("{id}/opinie")]
-		public async Task<ActionResult<UserIdLoginPreferencje>> DodajOpinie(int id, [FromBody] DodajOpinieCommand dodajOpinie)
+		public async Task<IActionResult> DodajOpinie(int id, [FromBody] DodajOpinieCommand dodajOpinie)
 		{
 			var user = await _context.Uzytkownicy
 				//.Include(u => u.Wydarzenia)       // Load events to count them
@@ -138,6 +138,37 @@ namespace kokos.Api.Controllers
 				throw;// new UserAlreadyExistsException($"User with login: '{userLoginPreferencje.Login}' already exists");
 			}
 			return NoContent();
+		}
+
+		// get api/<UsersController>/{}/opinie
+		[HttpGet("{id}/opinie")]
+		public async Task<ActionResult<IEnumerable<OpinionsForUserDto>>> GetOpinieDla(int id)
+		{
+			var user = await _context.Uzytkownicy
+				.Include(u => u.OpinionsForUser)  // Load opinions
+					.ThenInclude(o => o.Autor) // <--- THIS IS REQUIRED
+				.FirstOrDefaultAsync(u => u.Id == id);
+			if (user == null)
+				throw new InvalidUserException($"User id {id} does not exits");
+
+			var dto = _mapper.Map<IEnumerable<OpinionsForUserDto>>(user.OpinionsForUser);
+			return Ok(dto);
+		}
+
+		[HttpGet("{id}/eventy")]
+		public async Task<ActionResult<IEnumerable<EventInfoWithNamesOnlyDTO>>> GetEventy(int id)
+		{
+			var user = await _context.Uzytkownicy
+				.Include(u => u.Wydarzenia)
+					.ThenInclude(e => e.UczestnicyChetni)      // 1. Load Willing
+				.Include(u => u.Wydarzenia)                    // <--- Go back to "Wydarzenia"
+					.ThenInclude(e => e.UczestnicyPotwierdzeni)// 2. Load Confirmed
+				.FirstOrDefaultAsync(u => u.Id == id);
+			if (user == null)
+				throw new InvalidUserException($"User id {id} does not exits");
+
+			var dto = _mapper.Map<IEnumerable<EventInfoWithNamesOnlyDTO>>(user.Wydarzenia);
+			return Ok(dto);
 		}
 
 		// PUT api/Users/{}
