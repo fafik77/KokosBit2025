@@ -185,7 +185,7 @@ namespace kokos.Api.Controllers
 
 			return NoContent();
 		}
-		
+
 		[HttpDelete("{evtId}/removeUser/{usrId}")]
 		public async Task<IActionResult> RemoveUserInEvent(long evtId, int usrId)
 		{
@@ -223,6 +223,30 @@ namespace kokos.Api.Controllers
 			{
 				throw;
 			}
+
+			return NoContent();
+		}
+
+		[HttpPut("{evtId}/finish/{usrId}")]
+		public async Task<IActionResult> FinishEvent(long evtId, int usrId)
+		{
+			var userOwner = await _context.Uzytkownicy.FindAsync(usrId);
+			if (userOwner == null)
+				throw new InvalidUserException($"User id {usrId} does not exits");
+
+			var eventToJoin = await _context.Wydarzenia
+				.Include(e => e.Organizator)
+				.Include(e => e.UczestnicyPotwierdzeni)
+				.Include(e => e.UczestnicyChetni)
+				.FirstOrDefaultAsync(e => e.Id == evtId);
+			if (eventToJoin == null)
+				throw new InvalidEventException($"Event id {evtId} does not exits");
+
+			if (eventToJoin.Organizator.Id != userOwner.Id)
+				return BadRequest($"User id {usrId} is not the owner of event {evtId}");
+
+			eventToJoin.Zakonczone = true;
+			await _context.SaveChangesAsync();
 
 			return NoContent();
 		}

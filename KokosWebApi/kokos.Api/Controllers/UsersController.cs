@@ -157,7 +157,7 @@ namespace kokos.Api.Controllers
 			return Ok(dto);
 		}
 
-		[HttpGet("{id}/eventyOrganizuje")]
+		[HttpGet("{id}/eventsOrganized")]
 		public async Task<ActionResult<IEnumerable<EventInfoWithNamesOnlyDTO>>> GetEventsOrganized(int id)
 		{
 			var user = await _context.Uzytkownicy
@@ -174,7 +174,7 @@ namespace kokos.Api.Controllers
 			return Ok(dto);
 		}
 
-		[HttpGet("{id}/eventyPotwierdzony")]
+		[HttpGet("{id}/eventsConfirmed")]
 		public async Task<ActionResult<IEnumerable<EventInfoWithNamesOnlyDTO>>> GetEventsParticipatesConfirmed(int id)
 		{
 			var userExists = await _context.Uzytkownicy.AnyAsync(u => u.Id == id);
@@ -200,7 +200,7 @@ namespace kokos.Api.Controllers
 			return Ok(dto);
 		}
 
-		[HttpGet("{id}/eventyOczekuje")]
+		[HttpGet("{id}/eventsPending")]
 		public async Task<ActionResult<IEnumerable<EventInfoWithNamesOnlyDTO>>> GetEventsParticipatesPending(int id)
 		{
 			var userExists = await _context.Uzytkownicy.AnyAsync(u => u.Id == id);
@@ -226,7 +226,7 @@ namespace kokos.Api.Controllers
 			return Ok(dto);
 		}
 
-		[HttpGet("{id}/eventyZapisany")]
+		[HttpGet("{id}/eventsEnroled")]
 		public async Task<ActionResult<IEnumerable<EventInfoWithNamesOnlyDTO>>> GetEventsParticipatesAny(int id)
 		{
 			var userExists = await _context.Uzytkownicy.AnyAsync(u => u.Id == id);
