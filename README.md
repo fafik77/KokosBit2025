@@ -8,7 +8,7 @@
 ## 🔗 Repozytoria
 
 Ten projekt składa się z dwóch części:
-
+##  🔗 Link do przetestowania aplikacji - https://kokos-front.grayflower-7f624026.polandcentral.azurecontainerapps.io/auth
 *   🖥️ **Frontend (React):** https://github.com/Xp4blos/bit-festiwal-2025
 *   ⚙️ **Backend (.NET):** https://github.com/fafik77/KokosBit2025
 
