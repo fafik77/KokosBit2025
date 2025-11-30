@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using kokos.Api.DTO;
 using kokos.Api.DTO.Types;
 using kokos.Api.Exceptions;
 using kokos.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -24,16 +24,15 @@ namespace kokos.Api.Controllers
 		}
 		// GET: api/<UsersController>
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<UserSimpleDto>>> Get()
+		public async Task<ActionResult<List<UserSimpleDto>>> GetAllUsers()
 		{
-			var res = await _context.Uzytkownicy
-				.Include(u => u.Wydarzenia)       // Load events to count them
-				.Include(u => u.OpinionsForUser)  // Load opinions to average them
-				.AsNoTracking()
+			// No .Include() needed here!
+			// Entity Framework + AutoMapper generates the optimized SQL automatically
+			var dtos = await _context.Uzytkownicy
+				.ProjectTo<UserSimpleDto>(_mapper.ConfigurationProvider)
 				.ToListAsync();
 
-			var dto = _mapper.Map<IEnumerable< UserSimpleDto>>(res);
-			return Ok(dto);
+			return Ok(dtos);
 		}
 		public class UserLogin
 		{
