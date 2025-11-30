@@ -253,14 +253,18 @@ namespace kokos.Api.Controllers
 			return Ok(dto);
 		}
 
+		public class UserPreferencje
+		{
+			public string Preferencje { get; set; }
+		}
 		// PUT api/Users/{}
 		// updates only preferences, as Login has to be unique
 		[HttpPut("{id}")]
-		public async Task<IActionResult> Put(int id, [FromBody] UserLoginPreferencje userLoginPreferencje)
+		public async Task<IActionResult> PutPreferencje(int id, [FromBody] UserPreferencje userPreferencje)
 		{
 			var user = await _context.Uzytkownicy.FindAsync(id);
 			if (user == null) return NotFound();
-			user.Preferencje = userLoginPreferencje.Preferencje;
+			user.Preferencje = userPreferencje.Preferencje;
 			_context.Entry(user).State = EntityState.Modified;
 
 			await _context.SaveChangesAsync();

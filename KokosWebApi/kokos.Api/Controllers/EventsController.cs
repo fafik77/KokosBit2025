@@ -43,6 +43,7 @@ namespace kokos.Api.Controllers
 			.Include(e => e.Organizator)
 			.Include(e => e.UczestnicyPotwierdzeni)
 			.Include(e => e.UczestnicyChetni)
+			.AsNoTracking()
 			.FirstOrDefaultAsync(e => e.Id == id);
 
 			if (res == null)
