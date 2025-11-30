@@ -10,8 +10,8 @@ namespace kokos.Api.Models
 
 		public string Komentarz { get; set; }
 
-		// 1. Enforce Range [0-10]
-		[Range(0, 10, ErrorMessage = "Rating must be between 0 and 10")]
+		// 1. Enforce Range [1-10]
+		[Range(1, 10, ErrorMessage = "Rating must be between 1 and 10")]
 		public int Rating { get; set; }
 
 		// 2. The Author (Who wrote the review)

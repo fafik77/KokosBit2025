@@ -6,6 +6,7 @@ using kokos.Api.Exceptions;
 using kokos.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -83,6 +84,60 @@ namespace kokos.Api.Controllers
 			}
 			UserIdLoginPreferencje dto = new() { Id = user.Id, Login = user.Login, Preferencje = user.Preferencje };
 			return CreatedAtAction(nameof(GetUser), new { id = dto.Id }, dto);
+		}
+
+		public class DodajOpinieCommand
+		{
+			public string Komentarz { get; set; }
+
+			// 1. Enforce Range [1-10]
+			[Range(1, 10, ErrorMessage = "Rating must be between 1 and 10")]
+			public int Rating { get; set; }
+
+			// 2. The Author (Who wrote the review)
+			// We don't necessarily need a list of "WrittenReviews" in UserSimple, so we don't use InverseProperty here.
+			public int AutorId { get; set; }
+		}
+
+		// POST api/<UsersController>/{}/opinie
+		[HttpPost("{id}/opinie")]
+		public async Task<ActionResult<UserIdLoginPreferencje>> DodajOpinie(int id, [FromBody] DodajOpinieCommand dodajOpinie)
+		{
+			var user = await _context.Uzytkownicy
+				//.Include(u => u.Wydarzenia)       // Load events to count them
+				.Include(u => u.OpinionsForUser)  // Load opinions to add a new one
+				.FirstOrDefaultAsync(u => u.Id == id);
+			if (user == null)
+				throw new InvalidUserException($"User id {id} does not exits");
+
+			var userAuthor = await _context.Uzytkownicy
+				.FirstOrDefaultAsync(u => u.Id == dodajOpinie.AutorId);
+
+			if (userAuthor == null)
+				throw new InvalidUserException($"User id {id} does not exits");
+
+			if (user.OpinionsForUser == null) user.OpinionsForUser = new();
+
+			var nowaOpinia = new OpinionsForUser()
+			{
+				Autor = userAuthor,
+				Komentarz = dodajOpinie.Komentarz,
+				Rating = dodajOpinie.Rating,
+				RatedUser = user,
+				UserId = user.Id
+			};
+
+			user.OpinionsForUser.Add(nowaOpinia);
+
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateException ex)
+			{
+				throw;// new UserAlreadyExistsException($"User with login: '{userLoginPreferencje.Login}' already exists");
+			}
+			return NoContent();
 		}
 
 		// PUT api/Users/{}
