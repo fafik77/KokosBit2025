@@ -106,6 +106,7 @@ namespace kokos.Api.Controllers
 			var user = await _context.Uzytkownicy
 				//.Include(u => u.Wydarzenia)       // Load events to count them
 				.Include(u => u.OpinionsForUser)  // Load opinions to add a new one
+				.AsNoTracking()
 				.FirstOrDefaultAsync(u => u.Id == id);
 			if (user == null)
 				throw new InvalidUserException($"User id {id} does not exits");
@@ -147,6 +148,7 @@ namespace kokos.Api.Controllers
 			var user = await _context.Uzytkownicy
 				.Include(u => u.OpinionsForUser)  // Load opinions
 					.ThenInclude(o => o.Autor) // <--- THIS IS REQUIRED
+				.AsNoTracking()
 				.FirstOrDefaultAsync(u => u.Id == id);
 			if (user == null)
 				throw new InvalidUserException($"User id {id} does not exits");
@@ -155,19 +157,99 @@ namespace kokos.Api.Controllers
 			return Ok(dto);
 		}
 
-		[HttpGet("{id}/eventy")]
-		public async Task<ActionResult<IEnumerable<EventInfoWithNamesOnlyDTO>>> GetEventy(int id)
+		[HttpGet("{id}/eventyOrganizuje")]
+		public async Task<ActionResult<IEnumerable<EventInfoWithNamesOnlyDTO>>> GetEventsOrganized(int id)
 		{
 			var user = await _context.Uzytkownicy
 				.Include(u => u.Wydarzenia)
 					.ThenInclude(e => e.UczestnicyChetni)      // 1. Load Willing
 				.Include(u => u.Wydarzenia)                    // <--- Go back to "Wydarzenia"
 					.ThenInclude(e => e.UczestnicyPotwierdzeni)// 2. Load Confirmed
+				.AsNoTracking()
 				.FirstOrDefaultAsync(u => u.Id == id);
 			if (user == null)
 				throw new InvalidUserException($"User id {id} does not exits");
 
 			var dto = _mapper.Map<IEnumerable<EventInfoWithNamesOnlyDTO>>(user.Wydarzenia);
+			return Ok(dto);
+		}
+
+		[HttpGet("{id}/eventyPotwierdzony")]
+		public async Task<ActionResult<IEnumerable<EventInfoWithNamesOnlyDTO>>> GetEventsParticipatesConfirmed(int id)
+		{
+			var userExists = await _context.Uzytkownicy.AnyAsync(u => u.Id == id);
+			if (!userExists)
+			{
+				// Assuming InvalidUserException is your custom exception
+				throw new InvalidUserException($"User id {id} does not exist");
+			}
+
+			// 2. Query the events
+			var eventsParticipating = await _context.Wydarzenia
+				.Include(e => e.Organizator)              // Necessary for DTO mapping
+				.Include(e => e.UczestnicyPotwierdzeni)   // Necessary for filtering AND DTO
+				.Include(e => e.UczestnicyChetni)         // Necessary for DTO mapping
+														  // Logic: "Select events where Confirmed Participants list contains this ID"
+				.Where(e => 
+				e.UczestnicyPotwierdzeni.Any(u => u.Id == id)
+				)
+				.AsNoTracking()
+				.ToListAsync();
+
+			var dto = _mapper.Map<IEnumerable<EventInfoWithNamesOnlyDTO>>(eventsParticipating);
+			return Ok(dto);
+		}
+
+		[HttpGet("{id}/eventyOczekuje")]
+		public async Task<ActionResult<IEnumerable<EventInfoWithNamesOnlyDTO>>> GetEventsParticipatesPending(int id)
+		{
+			var userExists = await _context.Uzytkownicy.AnyAsync(u => u.Id == id);
+			if (!userExists)
+			{
+				// Assuming InvalidUserException is your custom exception
+				throw new InvalidUserException($"User id {id} does not exist");
+			}
+
+			// 2. Query the events
+			var eventsParticipating = await _context.Wydarzenia
+				.Include(e => e.Organizator)              // Necessary for DTO mapping
+				.Include(e => e.UczestnicyPotwierdzeni)   // Necessary for filtering AND DTO
+				.Include(e => e.UczestnicyChetni)         // Necessary for DTO mapping
+														  // Logic: "Select events where Confirmed Participants list contains this ID"
+				.Where(e => 
+				e.UczestnicyChetni.Any(u => u.Id == id)
+				)
+				.AsNoTracking()
+				.ToListAsync();
+
+			var dto = _mapper.Map<IEnumerable<EventInfoWithNamesOnlyDTO>>(eventsParticipating);
+			return Ok(dto);
+		}
+
+		[HttpGet("{id}/eventyZapisany")]
+		public async Task<ActionResult<IEnumerable<EventInfoWithNamesOnlyDTO>>> GetEventsParticipatesAny(int id)
+		{
+			var userExists = await _context.Uzytkownicy.AnyAsync(u => u.Id == id);
+			if (!userExists)
+			{
+				// Assuming InvalidUserException is your custom exception
+				throw new InvalidUserException($"User id {id} does not exist");
+			}
+
+			// 2. Query the events
+			var eventsParticipating = await _context.Wydarzenia
+				.Include(e => e.Organizator)              // Necessary for DTO mapping
+				.Include(e => e.UczestnicyPotwierdzeni)   // Necessary for filtering AND DTO
+				.Include(e => e.UczestnicyChetni)         // Necessary for DTO mapping
+														  // Logic: "Select events where Confirmed Participants list contains this ID"
+				.Where(e => 
+					e.UczestnicyPotwierdzeni.Any(u => u.Id == id) ||
+					e.UczestnicyChetni.Any(u => u.Id == id)
+				)
+				.AsNoTracking()
+				.ToListAsync();
+
+			var dto = _mapper.Map<IEnumerable<EventInfoWithNamesOnlyDTO>>(eventsParticipating);
 			return Ok(dto);
 		}
 
