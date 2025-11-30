@@ -4,11 +4,11 @@
 **Sonar** to inteligentny radar aktywności, który łączy ludzi o podobnych pasjach w bezpieczny i przemyślany sposób. To nie jest kolejny portal społecznościowy do scrollowania – to narzędzie, które wyciąga Cię z domu. Dzięki wykorzystaniu sztucznej inteligencji i geolokalizacji, aplikacja pomaga znaleźć partnerów do sportu, nauki czy wspólnego spędzania czasu w Twojej najbliższej okolicy.
 
 ---
+##  🔗 Link do przetestowania aplikacji - https://kokos-front.grayflower-7f624026.polandcentral.azurecontainerapps.io/auth
 
 ## 🔗 Repozytoria
 
 Ten projekt składa się z dwóch części:
-##  🔗 Link do przetestowania aplikacji - https://kokos-front.grayflower-7f624026.polandcentral.azurecontainerapps.io/auth
 *   🖥️ **Frontend (React):** https://github.com/Xp4blos/bit-festiwal-2025
 *   ⚙️ **Backend (.NET):** https://github.com/fafik77/KokosBit2025
 
