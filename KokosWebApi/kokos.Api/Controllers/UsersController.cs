@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using kokos.Api.DTO;
+using kokos.Api.DTO.Types;
 using kokos.Api.Exceptions;
 using kokos.Api.Models;
-using kokos.Api.Models.Types;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -22,31 +24,48 @@ namespace kokos.Api.Controllers
 		}
 		// GET: api/<UsersController>
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<UserSimple>>> Get()
+		public async Task<ActionResult<IEnumerable<UserSimpleDto>>> Get()
 		{
-			var res = await _context.Uzytkownicy.AsNoTracking().ToListAsync();
-			return Ok(res);
+			var res = await _context.Uzytkownicy
+				.Include(u => u.Wydarzenia)       // Load events to count them
+				.Include(u => u.OpinionsForUser)  // Load opinions to average them
+				.AsNoTracking()
+				.ToListAsync();
+
+			var dto = _mapper.Map<IEnumerable< UserSimpleDto>>(res);
+			return Ok(dto);
 		}
 		public class UserLogin
 		{
 			public string Login { get; set; }
 		}
 		[HttpPost("bylogin")]
-		public async Task<ActionResult<UserSimple>> GetUserByLogin(UserLogin login)
+		public async Task<ActionResult<UserSimpleDto>> GetUserByLogin(UserLogin login)
 		{
-			var user = await _context.Uzytkownicy.FirstOrDefaultAsync(u => u.Login == login.Login);
+			var user = await _context.Uzytkownicy
+				.Include(u => u.Wydarzenia)       // Load events to count them
+				.Include(u => u.OpinionsForUser)  // Load opinions to average them
+				.FirstOrDefaultAsync(u => u.Login == login.Login);
+
 			if (user == null) return NotFound();
-			return Ok(user);
+
+			var dto = _mapper.Map<UserSimpleDto>(user);
+			return Ok(dto);
 		}
 
 		// GET api/<UsersController>/5
 		[HttpGet("{id}")]
-		public async Task<ActionResult<UserSimple>> GetUser(int id)
+		public async Task<ActionResult<UserSimpleDto>> GetUser(int id)
 		{
-			var user = await _context.Uzytkownicy.FindAsync(id);
+			var user = await _context.Uzytkownicy
+				.Include(u => u.Wydarzenia)       // Load events to count them
+				.Include(u => u.OpinionsForUser)  // Load opinions to average them
+				.FirstOrDefaultAsync(u => u.Id == id);
+
 			if (user == null) return NotFound();
 
-			return Ok(user);
+			var dto = _mapper.Map<UserSimpleDto>(user);
+			return Ok(dto);
 		}
 
 		// POST api/<UsersController>

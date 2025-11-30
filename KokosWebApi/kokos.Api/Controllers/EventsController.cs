@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using kokos.Api.DTO;
+using kokos.Api.DTO.Types;
 using kokos.Api.Exceptions;
 using kokos.Api.Models;
-using kokos.Api.Models.Types;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
