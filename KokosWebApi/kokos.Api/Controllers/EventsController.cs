@@ -43,25 +43,19 @@ namespace kokos.Api.Controllers
 			.Include(e => e.Organizator)
 			.Include(e => e.UczestnicyPotwierdzeni)
 			.Include(e => e.UczestnicyChetni)
+			.AsNoTracking()
 			.FirstOrDefaultAsync(e => e.Id == id);
 
 			if (res == null)
-			{
 				return NotFound();
-			}
 
-			// AutoMapper does the work here based on your Profile
 			EventInfoWithNamesOnlyDTO dto = _mapper.Map<EventInfoWithNamesOnlyDTO>(res);
-
 			return Ok(dto);
 		}
 
 		[HttpPost]
 		public async Task<ActionResult<EventInfoWithNamesOnlyDTO>> PostWydarzenie([FromBody] EventCreate eventCreate)
 		{
-			//if (eventCreate.OrganizatorId == null)
-			//	throw new InvalidUserException("Organizator is required");
-
 			var organizator = await _context.Uzytkownicy.FindAsync(eventCreate.OrganizatorId);
 			if (organizator == null)
 				throw new InvalidUserException($"User id {eventCreate.OrganizatorId} does not exits");
@@ -82,16 +76,9 @@ namespace kokos.Api.Controllers
 			};
 
 			_context.Wydarzenia.Add(evInfo);
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateException ex)
-			{
-				throw;
-			}
-			// FIX: Use AutoMapper here to turn the fully created Entity into the DTO
-			// This ensures the Organizator string is populated correctly in the response
+
+			await _context.SaveChangesAsync();
+			//we map the result is it would be an endless loop of references
 			EventInfoWithNamesOnlyDTO dto = _mapper.Map<EventInfoWithNamesOnlyDTO>(evInfo);
 
 			return CreatedAtAction(nameof(GetWydarzenie), new { id = dto.Id }, dto);
@@ -133,16 +120,7 @@ namespace kokos.Api.Controllers
 
 			eventToJoin.UczestnicyChetni.Add(userJoining);
 
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateException ex)
-			{
-				throw;
-			}
-			// FIX: Use AutoMapper here to turn the fully created Entity into the DTO
-			// This ensures the Organizator string is populated correctly in the response
+			await _context.SaveChangesAsync();
 			EventInfoWithNamesOnlyDTO dto = _mapper.Map<EventInfoWithNamesOnlyDTO>(eventToJoin);
 
 			return CreatedAtAction(nameof(GetWydarzenie), new { id = dto.Id }, dto);
@@ -174,22 +152,14 @@ namespace kokos.Api.Controllers
 			eventToJoin.UczestnicyPotwierdzeni.Add(userToConfirm);
 			eventToJoin.UczestnicyChetni.Remove(userToConfirm);
 
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateException ex)
-			{
-				throw;
-			}
+			await _context.SaveChangesAsync();
 
 			return NoContent();
 		}
-		
+
 		[HttpDelete("{evtId}/removeUser/{usrId}")]
 		public async Task<IActionResult> RemoveUserInEvent(long evtId, int usrId)
 		{
-
 			var userToRemove = await _context.Uzytkownicy.FindAsync(usrId);
 			if (userToRemove == null)
 				throw new InvalidUserException($"User id {usrId} does not exits");
@@ -215,14 +185,31 @@ namespace kokos.Api.Controllers
 			else
 				eventToPurgeUser.UczestnicyPotwierdzeni?.Remove(userToRemoveFound);
 
-			try
-			{
-				await _context.SaveChangesAsync();
-			}
-			catch (DbUpdateException ex)
-			{
-				throw;
-			}
+			await _context.SaveChangesAsync();
+
+			return NoContent();
+		}
+
+		[HttpPut("{evtId}/finish/{usrId}")]
+		public async Task<IActionResult> FinishEvent(long evtId, int usrId)
+		{
+			var userOwner = await _context.Uzytkownicy.FindAsync(usrId);
+			if (userOwner == null)
+				throw new InvalidUserException($"User id {usrId} does not exits");
+
+			var eventToJoin = await _context.Wydarzenia
+				.Include(e => e.Organizator)
+				.Include(e => e.UczestnicyPotwierdzeni)
+				.Include(e => e.UczestnicyChetni)
+				.FirstOrDefaultAsync(e => e.Id == evtId);
+			if (eventToJoin == null)
+				throw new InvalidEventException($"Event id {evtId} does not exits");
+
+			if (eventToJoin.Organizator.Id != userOwner.Id)
+				return BadRequest($"User id {usrId} is not the owner of event {evtId}");
+
+			eventToJoin.Zakonczone = true;
+			await _context.SaveChangesAsync();
 
 			return NoContent();
 		}
